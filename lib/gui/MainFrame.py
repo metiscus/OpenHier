@@ -4,6 +4,7 @@ import wx.lib.agw.aui as aui
 import wx.dataview as dv
 import TreeEdit
 import DetailEdit
+from ..edit import requirement
 
 class MainFrame(wx.Frame):
     def __init__(self, parent, title):
@@ -11,7 +12,7 @@ class MainFrame(wx.Frame):
         splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(100)
         self.tree_id = wx.NewId()
-        self.tree = TreeEdit.TreeEdit(splitter, self.tree_id, wx.DefaultPosition,wx.DefaultSize,wx.TR_HAS_BUTTONS)
+        self.tree = TreeEdit.TreeEdit(self, splitter, self.tree_id, wx.DefaultPosition,wx.DefaultSize,wx.TR_HAS_BUTTONS)
         self.details = DetailEdit.DetailEdit(splitter)
         splitter.SplitVertically(self.tree, self.details)
         self.control = splitter
@@ -42,9 +43,16 @@ class MainFrame(wx.Frame):
         ])
         self.SetAcceleratorTable(accel_tbl)
         self.Show(True)
+        self.requirements = {}
+
+    def GetRequirement(self, id):
+        return self.requirements[id]
 
     def onAddChild(self, event):
-        self.tree.onAddChild(event)
+        req = requirement.Requirement()
+        id = req.GetId()
+        self.requirements[id] = req
+        self.tree.onAddChild(event, id)
     def onDelItem(self, event):
         self.tree.onDelItem(event)
     def onEdit(self, event):

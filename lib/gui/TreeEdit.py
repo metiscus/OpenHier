@@ -5,25 +5,24 @@ import wx.dataview as dv
 
 #Encapsulate the tree editing functionality
 class TreeEdit(wx.TreeCtrl):
-    def __init__(self, parent, id, pos, size, style):
+    def __init__(self, main, parent, id, pos, size, style):
         wx.TreeCtrl.__init__(self, parent, id, pos, size, style)
         self.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.onEdit)
-
-        # Vertical box sizer for controls
-        #box = wx.BoxSizer(wx.VERTICAL)
-        #box.Add(self.control, 1, wx.EXPAND)
-        #self.SetAutoLayout(True)
-        #self.SetSizer(box)
-        #self.Layout()
-
+        self.Bind(wx.EVT_TREE_END_LABEL_EDIT, self.onEditPost)
+        self.main = main
         self.root = self.AddRoot("Project")
         self.Show(True)
 
     # Add a new item
-    def onAddChild(self, event):
+    def onAddChild(self, event, id):
         focused = self.GetFocusedItem()
         if focused.IsOk():
-            self.AppendItem(focused, 'New Item')
+            data = wx.TreeItemData()
+            req = self.main.GetRequirement(id)
+            data.SetData(id)
+            self.AppendItem(focused, req.GetName(), data=data)
+            (itr,cookie) = self.GetFirstChild(self.root)
+            self.__update(itr, cookie)
             self.Expand(focused)
         elif self.IsEmpty():
             self.AddRoot("Project")
@@ -33,11 +32,29 @@ class TreeEdit(wx.TreeCtrl):
     def onDelItem(self, event):
         focused = self.GetFocusedItem()
         if focused.IsOk() and focused is not self.GetRootItem():
-            self.tree.Delete(focused)
+            self.Delete(focused)
 
     # Edit the title of an item
     def onEdit(self, event):
         self.EditLabel(event.GetItem())
+
+    def onEditPost(self, event):
+        data = self.GetItemData(event.GetItem())
+        if data:
+            req_id = data.GetData()
+            self.main.GetRequirement(req_id).SetName(event.GetLabel())
+
+    def __update(self, itr, cookie):
+        if not itr.IsOk():
+            return
+        data = self.GetItemData(itr)
+        if data:
+            req = self.main.GetRequirement(data.GetData())
+            self.SetItemText(itr, req.GetName())
+        while(itr.IsOk()):
+            (itr, cookie) = self.GetNextChild(self.root, cookie)
+            self.__update(itr, cookie)
+
 
     # Moves node and all of its children to live under parent
     def __moveTree(self, node, parent):
@@ -51,7 +68,7 @@ class TreeEdit(wx.TreeCtrl):
             while True and itr.IsOk():
                 self.__moveTree(itr, newParent)
                 (itr, cookie) = self.GetNextChild(node, cookie)
-        self.tree.Delete(node)
+        self.Delete(node)
         self.__updateBold()
 
     # Ensures that all children of the root node are bold
