@@ -10,8 +10,8 @@ class MainFrame(wx.Frame):
         wx.Frame.__init__(self, parent, title=title, size=(-1,-1))
         splitter = wx.SplitterWindow(self, -1, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(100)
-        tree = TreeEdit.TreeEdit(splitter)
-        self.tree = tree
+        self.tree_id = wx.NewId()
+        self.tree = TreeEdit.TreeEdit(splitter, self.tree_id, wx.DefaultPosition,wx.DefaultSize,wx.TR_HAS_BUTTONS)
         self.details = DetailEdit.DetailEdit(splitter)
         splitter.SplitVertically(self.tree, self.details)
         self.control = splitter
@@ -33,7 +33,7 @@ class MainFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.onDelItem, id=idDelItem)
         self.Bind(wx.EVT_MENU, self.onUnindent, id=idUnindent)
         self.Bind(wx.EVT_MENU, self.onIndent, id=idIndent)
-        self.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.onEdit, id=1)
+        #self.tree.tree.Bind(wx.EVT_TREE_ITEM_RIGHT_CLICK, self.onEdit, id=1)
         accel_tbl = wx.AcceleratorTable([
             (wx.ACCEL_CTRL,  ord('N'), idAddChild ),
             (wx.ACCEL_NORMAL, wx.WXK_DELETE, idDelItem ),

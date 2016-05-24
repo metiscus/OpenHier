@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import wx
-import MainFrame
 import gettext
+import lib.gui.MainFrame as MainFrame
+import lib.edit.Requirement as Requirement
+
 
 gettext.install('OpenHier')
 
